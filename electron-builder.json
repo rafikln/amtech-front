@@ -1,0 +1,16 @@
+{
+    "appId": "com.votreapp.stock",
+    "productName": "ProjetDeStock",
+    "directories": {
+      "output": "dist-electron"
+    },
+    "files": [
+      "dist/**",
+      "main.js"
+    ],
+    "win": {
+      "target": "nsis",
+      "icon": "build/icon.ico"
+    }
+  }
+  
