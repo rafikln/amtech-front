@@ -225,7 +225,7 @@ const ListeVente = () => {
       case "paid":
         return "bg-green-100";
       case "canceled":
-        return "bg-red-100";
+        return "bg-red-200";
       default:
         return "bg-white";
     }

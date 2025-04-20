@@ -618,4 +618,10 @@ const ModalDetailsFacture = ({
           paymentData={paymentData}
           setPaymentData={setPaymentData}
           setIsUpdateModalOpen={setIsUpdateModalOpen}
-        />git status
+        />
+      )}
+    </>
+  );
+};
+
+export default ModalDetailsFacture;
