@@ -13,7 +13,7 @@ const ListeVente = () => {
   const [deleteFactureId, setDeleteFactureId] = useState(null);
   const [dateStart, setDateStart] = useState("");
   const [dateEnd, setDateEnd] = useState("");
-  const [statusFilter, setStatusFilter] = useState("all"); // Add statusFilter state
+  const [statusFilter, setStatusFilter] = useState("all");
   const [isShowModalOpen, setIsShowModalOpen] = useState(false);
   const [selectedFacture, setSelectedFacture] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -99,16 +99,14 @@ const ListeVente = () => {
       });
     }
 
-    // Apply status filter
     if (statusFilter !== "all") {
       filtered = filtered.filter((facture) => facture.status === statusFilter);
     }
 
     setFilteredFactures(filtered);
-    setCurrentPage(1); // Reset to first page on new filter
-  }, [searchTerm, dateStart, dateEnd, statusFilter, factures]); // Add statusFilter to dependencies
+    setCurrentPage(1);
+  }, [searchTerm, dateStart, dateEnd, statusFilter, factures]);
 
-  // Pagination logic
   const indexOfLastFacture = currentPage * facturesPerPage;
   const indexOfFirstFacture = indexOfLastFacture - facturesPerPage;
   const currentFactures = filteredFactures.slice(indexOfFirstFacture, indexOfLastFacture);
@@ -203,6 +201,9 @@ const ListeVente = () => {
   };
 
   const updateFactureData = (factureId, updatedData) => {
+    console.log("Mise à jour de la facture ID :", factureId);
+    console.log("Données mises à jour :", updatedData);
+
     setFactures((prev) =>
       prev.map((facture) =>
         facture.id === factureId ? { ...facture, ...updatedData } : facture
@@ -240,8 +241,8 @@ const ListeVente = () => {
         setDateStart={setDateStart}
         dateEnd={dateEnd}
         setDateEnd={setDateEnd}
-        statusFilter={statusFilter} // Pass statusFilter
-        setStatusFilter={setStatusFilter} // Pass setStatusFilter
+        statusFilter={statusFilter}
+        setStatusFilter={setStatusFilter}
       />
 
       {loading && <div className="text-center mt-4">Chargement...</div>}

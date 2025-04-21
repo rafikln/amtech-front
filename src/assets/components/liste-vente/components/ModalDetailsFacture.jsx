@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Barcode from "react-barcode";
 import { ClipboardIcon, DocumentArrowDownIcon, PencilIcon, PlusIcon, Cog8ToothIcon } from "@heroicons/react/24/outline";
 import { PDFDownloadLink } from "@react-pdf/renderer";
@@ -25,6 +25,19 @@ const ModalDetailsFacture = ({
     pdfFile: null,
   });
   const [isActionMenuOpen, setIsActionMenuOpen] = useState(false);
+
+  // Initialiser warrantyData lorsque selectedFacture change
+  useEffect(() => {
+    if (selectedFacture && selectedFacture.produits) {
+      setWarrantyData(
+        selectedFacture.produits.map((produit) => ({
+          produit_id: produit.produit_id,
+          code_garantie: produit.code_garantie || "",
+          duree_garantie: produit.duree_garantie || "",
+        }))
+      );
+    }
+  }, [selectedFacture]);
 
   if (!selectedFacture) return null;
 
@@ -82,7 +95,6 @@ const ModalDetailsFacture = ({
   };
 
   const handleValidate = async () => {
-    // Vérifier si le montant restant est 0
     if (remainingAmount !== 0) {
       toast.error("La facture ne peut être validée tant que le montant restant n'est pas de 0 DA.");
       return;
@@ -93,21 +105,16 @@ const ModalDetailsFacture = ({
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
-          // Ajouter le token d'authentification si nécessaire
-          // "Authorization": `Bearer ${localStorage.getItem("token")}`,
         },
         body: JSON.stringify({ status: "paid" }),
       });
 
       const data = await response.json();
-
       if (!response.ok) {
         throw new Error(data.message || "Erreur lors de la validation de la facture");
       }
 
-      // Mettre à jour l'état local de la facture
       updateFactureData({ ...selectedFacture, status: "paid" });
-
       toast.success("Facture validée avec succès !");
       setIsActionMenuOpen(false);
       handleCloseModal();
@@ -122,26 +129,72 @@ const ModalDetailsFacture = ({
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
-          // Ajouter le token d'authentification si nécessaire
-          // "Authorization": `Bearer ${localStorage.getItem("token")}`,
         },
         body: JSON.stringify({ status: "canceled" }),
       });
 
       const data = await response.json();
-
       if (!response.ok) {
         throw new Error(data.message || "Erreur lors de l'annulation de la facture");
       }
 
-      // Mettre à jour l'état local de la facture
       updateFactureData({ ...selectedFacture, status: "canceled" });
-
       toast.success("Facture annulée avec succès !");
       setIsActionMenuOpen(false);
       handleCloseModal();
     } catch (error) {
       toast.error(error.message || "Erreur lors de l'annulation de la facture");
+    }
+  };
+
+  // Fonction pour gérer la mise à jour des garanties via l'API
+  const handleWarrantyUpdate = async () => {
+    try {
+      const payload = {
+        articles: warrantyData.map((produit) => ({
+          article_facture_id: produit.produit_id,
+          duree_garantie: parseInt(produit.duree_garantie, 10),
+          code_garantie: produit.code_garantie,
+        })),
+      };
+
+      const response = await fetch(`https://il-developer.com/api/factures/${selectedFacture.id}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(payload),
+      });
+
+      const data = await response.json();
+      if (!response.ok) {
+        throw new Error(data.message || "Erreur lors de la mise à jour des garanties");
+      }
+
+      // Mettre à jour les produits dans selectedFacture
+      const updatedProduits = selectedFacture.produits.map((produit) => {
+        const updatedWarranty = warrantyData.find(
+          (w) => w.produit_id === produit.produit_id
+        );
+        return updatedWarranty
+          ? {
+              ...produit,
+              code_garantie: updatedWarranty.code_garantie,
+              duree_garantie: updatedWarranty.duree_garantie,
+            }
+          : produit;
+      });
+
+      // Mettre à jour l'état local via updateFactureData
+      updateFactureData({
+        ...selectedFacture,
+        produits: updatedProduits,
+      });
+
+      toast.success("Garanties mises à jour avec succès !");
+      setIsUpdateModalOpen(false);
+    } catch (error) {
+      toast.error(error.message || "Erreur lors de la mise à jour des garanties");
     }
   };
 
@@ -179,12 +232,12 @@ const ModalDetailsFacture = ({
                         <Cog8ToothIcon className="w-5 h-5" />
                       </button>
                       {isActionMenuOpen && (
-                        <div className="absolute right-0 mt-2 w-56 bg-white dark:bg-gray-800 rounded-xl shadow-xl z-20 overflow-hidden transform transition-all duration-200 ease-in-out scale-95 origin-top-right animate-fadeIn">
+                        <div className="absolute right-0 mt-2 w-56 bg-white dark:bg-gray-800 rounded-xl shadow-xl z-20 overflow-hidden">
                           <ul className="py-2">
                             <li>
                               <button
                                 onClick={handleValidate}
-                                className="flex items-center gap-3 px-4 py-2.5 text-sm font-medium text-gray-700 dark:text-gray-200 hover:bg-green-50 dark:hover:bg-green-700 hover:text-green-800 dark:hover:text-green-100 transition-colors duration-150 w-full"
+                                className="flex items-center gap-3 px-4 py-2.5 text-sm font-medium text-gray-700 dark:text-gray-200 hover:bg-green-50 dark:hover:bg-green-700 hover:text-green-800 dark:hover:text-green-100 w-full"
                               >
                                 <svg
                                   className="w-5 h-5"
@@ -206,7 +259,7 @@ const ModalDetailsFacture = ({
                             <li>
                               <button
                                 onClick={handleCancel}
-                                className="flex items-center gap-3 px-4 py-2.5 text-sm font-medium text-gray-700 dark:text-gray-200 hover:bg-red-50 dark:hover:bg-red-700 hover:text-red-800 dark:hover:text-red-100 transition-colors duration-150 w-full"
+                                className="flex items-center gap-3 px-4 py-2.5 text-sm font-medium text-gray-700 dark:text-gray-200 hover:bg-red-50 dark:hover:bg-red-700 hover:text-red-800 dark:hover:text-red-100 w-full"
                               >
                                 <svg
                                   className="w-5 h-5"

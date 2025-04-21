@@ -71,7 +71,7 @@ const FormulaireMiseAJourGarantie = ({
                   Durée Garantie
                 </label>
                 <input
-                  type="text"
+                  type="number" // Changé en type number pour éviter les entrées non numériques
                   value={produit.duree_garantie}
                   onChange={(e) => {
                     const newData = [...warrantyData];
@@ -84,7 +84,10 @@ const FormulaireMiseAJourGarantie = ({
             </div>
           ))}
           <button
-            onClick={handleWarrantyUpdate}
+            onClick={() => {
+              console.log("warrantyData avant mise à jour :", warrantyData);
+              handleWarrantyUpdate();
+            }}
             className="w-full mt-4 p-2 bg-green-500 text-white rounded-lg hover:bg-green-600"
           >
             Enregistrer

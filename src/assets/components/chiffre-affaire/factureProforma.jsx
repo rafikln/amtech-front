@@ -339,7 +339,7 @@ return (
         </div>
       </div>
     ) : (
-      <div className="w-full min-h-screen flex justify-center items-center px-4 bg-gradient-to-br from-gray-900 to-gray-800">
+      <div className="w-full min-h-screen flex justify-center items-center px-4 ">
         <div className="bg-white p-8 rounded-2xl shadow-xl w-full max-w-md transform transition-all duration-300 hover:scale-[1.01]">
           <div className="text-center mb-8">
             <div className="mx-auto w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mb-4">
