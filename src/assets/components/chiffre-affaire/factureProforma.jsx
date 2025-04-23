@@ -90,7 +90,7 @@ const CashRegisterDashboard = () => {
       filtered = filtered.filter(facture => facture.status === 'canceled' || facture.status === 'Annulée');
     }
 
-    // Date filtering
+    // Date filtering - now using installment dates
     let startDate, endDate;
     if (filter === 'day') {
       const today = new Date();
@@ -112,8 +112,13 @@ const CashRegisterDashboard = () => {
 
     if (startDate && endDate) {
       filtered = filtered.filter(facture => {
-        const factureDate = new Date(facture.date_creation);
-        return factureDate >= startDate && factureDate <= endDate;
+        // Check if any installment falls within the date range
+        return facture.payment_methods.some(payment => 
+          payment.installments.some(installment => {
+            const installmentDate = new Date(installment.date);
+            return installmentDate >= startDate && installmentDate <= endDate;
+          })
+        );
       });
     }
 
@@ -248,7 +253,7 @@ const CashRegisterDashboard = () => {
                   onChange={(e) => setFilter(e.target.value)}
                 >
                   <option value="all">Toutes</option>
-                  <option value="day">Aujourd'hui</option>
+                  <option value="day">Aujourd&apos;hui</option>
                   <option value="month">Ce mois</option>
                   <option value="year">Cette année</option>
                   <option value="custom">Personnalisé</option>
@@ -334,7 +339,9 @@ const CashRegisterDashboard = () => {
                       </td>
                       <td className="p-3">{payment.method.toUpperCase()}</td>
                       <td className="p-3">
-                        {new Date(facture.date_creation).toLocaleDateString()}
+                      {installment.date 
+                        ? new Date(installment.date).toLocaleDateString('fr-FR') 
+                        : new Date(facture.date_creation).toLocaleDateString('fr-FR')}
                       </td>
                       <td className="p-3">
                         <span className={`px-2 py-1 rounded ${
